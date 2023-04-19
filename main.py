@@ -33,52 +33,6 @@ def P_V(G):
 
 
 def C(G, Vi):
-    N_E = np.count_nonzero(G == 1)
-
-    D_Vi = 0
-    N_E_Vi = 0
-    for vj in Vi:
-        N_Vi_ = 0
-        for vk in Vi:
-            N_Vi_ += G[vj, vk] + G[vk, vj]  # Since we do not know the order exactly.
-
-        N_E_Vi += N_Vi_
-
-        d_vj = np.count_nonzero(G[vj, :] == 1) + np.count_nonzero(G[:, vj] == 1)
-        D_Vi += d_vj - N_Vi_
-
-    return N_E - D_Vi - N_E_Vi
-
-
-def C_p(G, Vi):
-    N_V = G.shape[0]
-    N_E = N_V * (N_V - 1)
-
-    D_Vi = 0
-    for vj in Vi:
-        d_vj = np.count_nonzero(G[vj, :] == 1) + np.count_nonzero(G[:, vj] == 1)
-        D_Vi += d_vj
-
-    return N_E - D_Vi
-
-
-def C_f(G, Vi):
-    N_V = G.shape[0]
-    N_E = N_V * (N_V - 1)
-
-    G_ = np.copy(G)
-    D_Vi = 0
-    for vj in Vi:
-        d_vj = np.count_nonzero(G_[vj, :] == 1) + np.count_nonzero(G_[:, vj] == 1)
-        D_Vi += d_vj
-
-        G_[vj, np.argwhere(G_[vj, :])] = 0
-        G_[np.argwhere(G_[:, vj]), vj] = 0
-
-    return N_E - D_Vi
-
-
-def C_f_e(G, Vi):
     N_V = G.shape[0]
     N_E = N_V * (N_V - 1) / 2
 
@@ -93,7 +47,7 @@ def C_f_e(G, Vi):
 
     N_Vi = len(Vi)
 
-    return N_E - D_Vi + math.exp(N_V - N_Vi) + math.exp(N_Vi) + math.exp(N_E - D_Vi)
+    return math.exp(N_E - D_Vi) + math.exp(N_V - N_Vi) + math.exp(N_Vi)
 
 
 def visualize_graph(G):
@@ -113,10 +67,7 @@ def main():
 
     _C = []
     for Vi in _P_V:
-        # _C = C(G, Vi)
-        # _C = C_p(G, Vi)
-        # _C = C_f(G, Vi)
-        _c = C_f_e(G, Vi)
+        _c = C(G, Vi)
         _C.append(_c)
         print("%s\t\t: %f" % (Vi, _c))
 
