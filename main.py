@@ -1,13 +1,23 @@
 import numpy as np
 from itertools import chain, combinations
-import math
 import networkx as nx
 import matplotlib.pyplot as plt
 
+alpha = 0.25
+beta = 1.5
+
+# G = np.array([
+#     [0, 1, 0, 1, 1, 1],
+#     [0, 0, 1, 1, 0, 0],
+#     [0, 0, 0, 1, 0, 0],
+#     [0, 0, 0, 0, 1, 0],
+#     [0, 0, 0, 0, 0, 1],
+#     [0, 0, 0, 0, 0, 0]
+# ])
 
 G = np.array([
-    [0, 1, 0, 1, 1, 1],
-    [0, 0, 1, 1, 0, 0],
+    [0, 1, 0, 0, 1, 0],
+    [0, 0, 1, 1, 0, 1],
     [0, 0, 0, 1, 0, 0],
     [0, 0, 0, 0, 1, 0],
     [0, 0, 0, 0, 0, 1],
@@ -32,22 +42,21 @@ def P_V(G):
     return list(_P_V)
 
 
-def C(G, Vi):
-    N_V = G.shape[0]
-    N_E = N_V * (N_V - 1) / 2
+def C(G, Vi, alpha, beta):
+    d0 = 0
+    for va in range(G.shape[0]):
+        for vb in range(G.shape[1]):
+            if va not in Vi and vb not in Vi:
+                d0 += np.count_nonzero(G[va, vb] == 1)
 
-    G_ = np.copy(G)
-    D_Vi = 0
+    d1 = 0
     for vj in Vi:
-        d_vj = np.count_nonzero(G_[vj, :] == 1) + np.count_nonzero(G_[:, vj] == 1)
-        D_Vi += d_vj
+        for vb in range(G.shape[1]):
+            if vb not in Vi:
+                d1 += np.count_nonzero(G[vj, vb] == 1) + \
+                    np.count_nonzero(G[vb, vj] == 1)
 
-        G_[vj, np.argwhere(G_[vj, :])] = 0
-        G_[np.argwhere(G_[:, vj]), vj] = 0
-
-    N_Vi = len(Vi)
-
-    return math.exp(N_E - D_Vi) + math.exp(N_V - N_Vi) + math.exp(N_Vi)
+    return beta * len(Vi) + 1 * d0 + alpha * d1
 
 
 def visualize_graph(G):
@@ -67,16 +76,16 @@ def main():
 
     _C = []
     for Vi in _P_V:
-        _c = C(G, Vi)
+        _c = C(G, Vi, alpha, beta)
         _C.append(_c)
         print("%s\t\t: %f" % (Vi, _c))
 
     print()
     _min_c = min(_C)
     min_idx = _C.index(_min_c)
-    print("Minimum Vertex Cover: %s\nVertex Covering Number = %d\nCost = %f" % (_P_V[min_idx], len(_P_V[min_idx]), _min_c))
+    print("Minimum Vertex Cover: %s\nVertex Covering Number = %d\nCost = %f" %
+          (_P_V[min_idx], len(_P_V[min_idx]), _min_c))
 
 
 if __name__ == '__main__':
     main()
-
